@@ -1,5 +1,5 @@
-# Genetic Algoithm
-A simple Genetic Algoithm demo to minimize an objective function.
+# Genetic Algorithm
+A simple Genetic Algorithm demo to minimize an objective function.
 
 ### References
 * https://arxiv.org/pdf/1308.4675.pdf
