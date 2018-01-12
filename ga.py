@@ -4,6 +4,7 @@ A simple Genetic Algorithm to minimize and objective function.
 '''
 
 from __future__ import division
+from itertools import combinations
 import numpy as np
 np.random.seed(0)
 
@@ -15,13 +16,14 @@ def fit_func(ch):
 	return f_x
 
 def selection(init_chromosomes):
-	# print init_chromosomes
+
 	f_x = []
 	fit_scores = []
 	cumulative_prob = 0
 	cumulative_probs = []
 	idx = []
 	new_chromosomes = np.zeros((init_chromosomes.shape[1]))
+
 	for i in xrange(init_chromosomes.shape[0]):
 		calc_fit_func = fit_func(init_chromosomes[i,:])
 		f_x.append(calc_fit_func)
@@ -56,11 +58,20 @@ def selection(init_chromosomes):
 	return new_chromosomes[1:,]
 
 
-
-
-
+# one-cut point crossover
 def crossover(new_chromosomes):
-	pass
+
+	crossover_rate = 0.25
+	parent_idx = []
+
+	for i in xrange(new_chromosomes.shape[0]):
+		rnd_number = np.random.uniform()
+		if rnd_number < crossover_rate:
+			parent_idx.append(i)
+
+	crossover_idxs = list(combinations(parent_idx, 2))
+	print crossover_idxs
+
 
 
 def mutation():
@@ -84,4 +95,4 @@ if __name__ == "__main__":
 
 
 	new_chromosomes = selection(init_chromosomes)
-	print new_chromosomes
+	crossover = crossover(new_chromosomes)
