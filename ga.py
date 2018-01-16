@@ -15,6 +15,7 @@ def fit_func(ch):
 	f_x = np.abs((ch[0] + 2*ch[1] + 3*ch[2] + 4*ch[3]) - 30)
 	return f_x
 
+
 def selection(init_chromosomes):
 
 	f_x = []
@@ -70,12 +71,31 @@ def crossover(new_chromosomes):
 			parent_idx.append(i)
 
 	crossover_idxs = list(combinations(parent_idx, 2))
-	print crossover_idxs
+	for i in xrange(len(crossover_idxs)):
+		rnd_number = np.random.randint(1, new_chromosomes.shape[1] - 1)
+		c1 = crossover_idxs[i][0]
+		c2 = crossover_idxs[i][1]
+		new_chromosomes[c1][rnd_number+1:] = new_chromosomes[c2][rnd_number+1:]
+
+	return new_chromosomes
 
 
 
-def mutation():
-	pass
+def mutation(crossover_chroms):
+
+	mutation_rate = 0.05
+	total_gen = crossover_chroms.shape[0] * crossover_chroms.shape[1]
+	n_mutations = mutation_rate * total_gen
+	n_mutations = int(np.around(n_mutations))
+	rnd_number1 = np.random.randint(0, total_gen, size=(n_mutations))
+	rnd_number2 = np.random.randint(0, 31, size=(len(rnd_number1)))
+	flat_chroms = crossover_chroms.flatten()
+	for i in xrange(len(rnd_number1)):
+		flat_chroms[rnd_number1[i]] = rnd_number2[i]
+	mutated_chroms = flat_chroms.reshape(crossover_chroms.shape[0], crossover_chroms.shape[1])
+	return mutated_chroms
+
+
 
 
 
@@ -84,7 +104,7 @@ if __name__ == "__main__":
 
 	generations = 50
 
-	init_chromosomes = np.random.randint(0,30,size=(8,4))
+	init_chromosomes = np.random.randint(0,31,size=(8,4))
 	# init_chromosomes = np.array([[12,5,23,8],
 	# 	[2,21,18,3],
 	# 	[10,4,13,14],
@@ -92,7 +112,10 @@ if __name__ == "__main__":
 	# 	[1,4,13,19],
 	# 	[20,5,17,1]])
 
-
-
-	new_chromosomes = selection(init_chromosomes)
-	crossover = crossover(new_chromosomes)
+	for i in xrange(generations):
+		print "generation:", i
+		new_chromosomes = selection(init_chromosomes)
+		crossover_chroms = crossover(new_chromosomes)
+		mutated_chroms = mutation(crossover_chroms)
+		init_chromosomes = mutated_chroms
+	print init_chromosomes
