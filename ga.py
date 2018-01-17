@@ -6,7 +6,7 @@ A simple Genetic Algorithm to minimize and objective function.
 from __future__ import division
 from itertools import combinations
 import numpy as np
-np.random.seed(0)
+# np.random.seed(0)
 
 # objective function / fitness function
 # a + 2*b + 3*c + 4*d - 30
@@ -16,7 +16,9 @@ def fit_func(ch):
 	return f_x
 
 
+# selection
 def selection(init_chromosomes):
+	# print init_chromosomes
 
 	f_x = []
 	fit_scores = []
@@ -25,21 +27,24 @@ def selection(init_chromosomes):
 	idx = []
 	new_chromosomes = np.zeros((init_chromosomes.shape[1]))
 
+	# calculate fitness
 	for i in xrange(init_chromosomes.shape[0]):
 		calc_fit_func = fit_func(init_chromosomes[i,:])
 		f_x.append(calc_fit_func)
 
+	# fitness probabilities
 	for i in f_x:
 		score = 1 / (1 + i)
 		fit_scores.append(score)
 	total_score = np.sum(fit_scores)
 	prob_chrom_fit = fit_scores / total_score
 
+	# cumulative probabilities
 	for i in prob_chrom_fit:
 		cumulative_prob += i
 		cumulative_probs.append(cumulative_prob)
-	# print cumulative_probs
 
+	# Roulette wheel selection
 	rnd_number = np.random.uniform(size=len(cumulative_probs))
 	for j in rnd_number:
 		for i in xrange(len(cumulative_probs)):
@@ -56,7 +61,7 @@ def selection(init_chromosomes):
 	for i in idx:
 		new_chromosomes = np.vstack([new_chromosomes, init_chromosomes[i,:]])
 
-	return new_chromosomes[1:,]
+	return new_chromosomes[1:,], init_chromosomes, f_x
 
 
 # one-cut point crossover
@@ -65,11 +70,13 @@ def crossover(new_chromosomes):
 	crossover_rate = 0.25
 	parent_idx = []
 
+	# choose parents for crossover
 	for i in xrange(new_chromosomes.shape[0]):
 		rnd_number = np.random.uniform()
 		if rnd_number < crossover_rate:
 			parent_idx.append(i)
 
+	# crossover
 	crossover_idxs = list(combinations(parent_idx, 2))
 	for i in xrange(len(crossover_idxs)):
 		rnd_number = np.random.randint(1, new_chromosomes.shape[1] - 1)
@@ -80,15 +87,14 @@ def crossover(new_chromosomes):
 	return new_chromosomes
 
 
-
+# mutation
 def mutation(crossover_chroms):
 
 	mutation_rate = 0.05
 	total_gen = crossover_chroms.shape[0] * crossover_chroms.shape[1]
-	n_mutations = mutation_rate * total_gen
-	n_mutations = int(np.around(n_mutations))
+	n_mutations = int(np.around(mutation_rate * total_gen))
 	rnd_number1 = np.random.randint(0, total_gen, size=(n_mutations))
-	rnd_number2 = np.random.randint(0, 31, size=(len(rnd_number1)))
+	rnd_number2 = np.random.randint(0, 30, size=(len(rnd_number1)))
 	flat_chroms = crossover_chroms.flatten()
 	for i in xrange(len(rnd_number1)):
 		flat_chroms[rnd_number1[i]] = rnd_number2[i]
@@ -96,15 +102,10 @@ def mutation(crossover_chroms):
 	return mutated_chroms
 
 
-
-
-
-
 if __name__ == "__main__":
 
-	generations = 50
-
-	init_chromosomes = np.random.randint(0,31,size=(8,4))
+	generation = 0
+	init_chromosomes = np.random.randint(0,30,size=(8,4))
 	# init_chromosomes = np.array([[12,5,23,8],
 	# 	[2,21,18,3],
 	# 	[10,4,13,14],
@@ -112,10 +113,18 @@ if __name__ == "__main__":
 	# 	[1,4,13,19],
 	# 	[20,5,17,1]])
 
-	for i in xrange(generations):
-		print "generation:", i
-		new_chromosomes = selection(init_chromosomes)
+	while(True):
+
+		generation += 1
+		print "genertion", generation
+		new_chromosomes, fit_chroms, f_x = selection(init_chromosomes)
 		crossover_chroms = crossover(new_chromosomes)
 		mutated_chroms = mutation(crossover_chroms)
 		init_chromosomes = mutated_chroms
-	print init_chromosomes
+
+		min_fit_score = np.min(f_x)
+		arg_fit_chrom = np.argmin(f_x)
+		print "Fit chromosome:", str(fit_chroms[arg_fit_chrom])
+		print "Fit chromosome score:", str(min_fit_score) + "\n"
+		if (min_fit_score == 0):
+			break
